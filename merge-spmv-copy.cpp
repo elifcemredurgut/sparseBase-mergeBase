@@ -1,13 +1,17 @@
 //#include <omp.h>
 #include <stdio.h>
 #include <vector>
+#include <sparsebase/format/format.h>
+#include <sparsebase/object/object.h>
+#include <sparsebase/preprocess/preprocess.h>
+#include <sparsebase/utils/io/reader.h>
 //#include <algorithm>
 //#include <cstdio>
 //#include <fstream>
 //#include <sstream>
 //#include <iostream>
 //#include <limits>
-
+using namespace sparsebase;
 
 //---------------------------------------------------------------------
 // Utility types
@@ -183,7 +187,7 @@ template <
     typename IDType>
 void OmpMergeCsrmv(
     int                              num_threads,
-    CsrMatrix<ValueType, IDType>&    a,
+    format::CSR<unsigned long long, unsigned long long, double>&    a,
     NNZType*    __restrict           row_ptr,    ///< Merge list A (row end-offsets)
     IDType*    __restrict            cols,
     IDType*    __restrict            num_nonzeros,
@@ -201,7 +205,7 @@ void OmpMergeCsrmv(
         // Merge list B (NZ indices)
         CountingInputIterator<IDType>  nonzero_indices(0);
 
-        IDType num_merge_items     = a.n + num_nonzeros;                          // Merge path total length
+        IDType num_merge_items     = a.dimension_[0] + num_nonzeros;                          // Merge path total length
         IDType items_per_thread    = (num_merge_items + num_threads - 1) / num_threads;    // Merge items per thread
 
         // Find starting and ending MergePath coordinates (row-idx, nonzero-idx) for each thread
@@ -210,8 +214,8 @@ void OmpMergeCsrmv(
         int     start_diagonal      = std::min(items_per_thread * tid, num_merge_items);
         int     end_diagonal        = std::min(start_diagonal + items_per_thread, num_merge_items);
 
-        MergePathSearch(start_diagonal, row_ptr, nonzero_indices, a.n, num_nonzeros, thread_coord);
-        MergePathSearch(end_diagonal, row_ptr, nonzero_indices, a.n, num_nonzeros, thread_coord_end);
+        MergePathSearch(start_diagonal, row_ptr, nonzero_indices, a.dimension_[0], num_nonzeros, thread_coord);
+        MergePathSearch(end_diagonal, row_ptr, nonzero_indices, a.dimension_[0], num_nonzeros, thread_coord_end);
 
         // Consume whole rows
         for (; thread_coord.x < thread_coord_end.x; ++thread_coord.x)
@@ -240,9 +244,14 @@ void OmpMergeCsrmv(
     // Carry-out fix-up (rows spanning multiple threads)
     for (int tid = 0; tid < num_threads - 1; ++tid)
     {
-        if (row_carry_out[tid] < a.n)
+        if (row_carry_out[tid] < a.dimension_[0])
             vector_y_out[row_carry_out[tid]] += value_carry_out[tid];
     }
 }
 
+
+int main() {
+
+	return 0;
+}
 
