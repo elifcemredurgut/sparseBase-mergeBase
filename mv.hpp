@@ -204,7 +204,7 @@ void OmpMergeCsrmv(
         // Merge list B (NZ indices)
         CountingInputIterator<IDType>  nonzero_indices(0);
 
-        IDType num_merge_items     = a.dimension_[0] + a.num_nonzeros;                          // Merge path total length
+        IDType num_merge_items     = a.get_dimensions()[0] + a.get_num_nnz();                          // Merge path total length
         IDType items_per_thread    = (num_merge_items + num_threads - 1) / num_threads;    // Merge items per thread
 
         // Find starting and ending MergePath coordinates (row-idx, nonzero-idx) for each thread
@@ -213,8 +213,8 @@ void OmpMergeCsrmv(
         int     start_diagonal      = std::min(items_per_thread * tid, num_merge_items);
         int     end_diagonal        = std::min(start_diagonal + items_per_thread, num_merge_items);
 
-        MergePathSearch(start_diagonal, row_ptr, nonzero_indices, a.dimension_[0], a.num_nonzeros, thread_coord);
-        MergePathSearch(end_diagonal, row_ptr, nonzero_indices, a.dimension_[0], a.num_nonzeros, thread_coord_end);
+        MergePathSearch(start_diagonal, row_ptr, nonzero_indices, (int)a.get_dimensions()[0], (int)a.get_num_nnz(), thread_coord);
+        MergePathSearch(end_diagonal, row_ptr, nonzero_indices, (int)a.get_dimensions()[0], (int)a.get_num_nnz(), thread_coord_end);
 
         // Consume whole rows
         for (; thread_coord.x < thread_coord_end.x; ++thread_coord.x)
@@ -243,14 +243,7 @@ void OmpMergeCsrmv(
     // Carry-out fix-up (rows spanning multiple threads)
     for (int tid = 0; tid < num_threads - 1; ++tid)
     {
-        if (row_carry_out[tid] < a.dimension_[0])
+        if (row_carry_out[tid] < a.get_dimensions()[0])
             vector_y_out[row_carry_out[tid]] += value_carry_out[tid];
     }
 }
-
-
-//int main() {
-
-//	return 0;
-//}
-

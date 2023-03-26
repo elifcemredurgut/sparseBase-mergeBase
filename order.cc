@@ -8,7 +8,7 @@
 
 #include <omp.h>
 #include <algorithm>
-#include "../sparseBase-mergeBase/ms.hpp"
+#include "mv.hpp"
 //#include <mkl.h>
 using namespace std;
 using namespace sparsebase;
@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
   for (int col = 0; col < csr->get_dimensions()[1]; ++col)
         vector_x[col] = 1.0;
 
-  OmpMergeCsrmv<unsigned long long, unsigned long long, double>(1, &(*(*csr)), csr->get_row_ptr(), csr->get_col(), csr->get_vals(), vector_x, vector_y_out);
+  OmpMergeCsrmv<double, unsigned long long, long long unsigned int>(1, *csr, csr->get_row_ptr(), csr->get_col(), csr->get_vals(), vector_x, vector_y_out);
 
 #ifdef REORDER
 
