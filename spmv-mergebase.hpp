@@ -217,15 +217,20 @@ void OmpMergeCsrmv(
         MergePathSearch(end_diagonal, row_ptr, nonzero_indices, (int)a.get_dimensions()[0], (int)a.get_num_nnz(), thread_coord_end);
 
         // Consume whole rows
+        thread_coord.x++;
         for (; thread_coord.x < thread_coord_end.x; ++thread_coord.x)
         {
+            //std::cout << "\nx:" << thread_coord.x << "\n";
+            //std::cout << "\nout y:" << thread_coord.y << "\n";
             ValueType running_total = 0.0;
             for (; thread_coord.y < row_ptr[thread_coord.x]; ++thread_coord.y)
             {
+              //  std::cout << "\nin y:" << thread_coord.y << "\n";
+               // std::cout << "vals[y]: " << vals[thread_coord.y] << " **** vector_x[cols[y]]: " << vector_x[cols[thread_coord.y]] << "\n";
                 running_total += vals[thread_coord.y] * vector_x[cols[thread_coord.y]];
             }
-
-            vector_y_out[thread_coord.x] = running_total;
+            //std::cout << "info: " << thread_coord.x << " " << running_total << "\n";
+            vector_y_out[(thread_coord.x)-1] = running_total;
         }
 
         // Consume partial portion of thread's last row
